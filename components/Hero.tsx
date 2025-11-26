@@ -1,24 +1,34 @@
+
 // @ts-nocheck
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Float, MeshDistortMaterial, Environment, OrbitControls } from '@react-three/drei';
+import { Float, MeshTransmissionMaterial, Environment, OrbitControls } from '@react-three/drei';
+import { EffectComposer, Bloom, Noise, Vignette } from '@react-three/postprocessing';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, ChevronRight } from 'lucide-react';
 import { HERO_CONTENT } from '../constants';
 
-const AnimatedShape = ({ position, color, speed, distort, scale }: any) => {
+const AnimatedShape = ({ position, color, speed, scale, roughness = 0.2 }: any) => {
   return (
-    <Float speed={speed} rotationIntensity={1} floatIntensity={1}>
+    <Float speed={speed} rotationIntensity={1.5} floatIntensity={1.5}>
       <mesh position={position} scale={scale}>
         <sphereGeometry args={[1, 64, 64]} />
-        <MeshDistortMaterial
+        {/* Glassmorphism Material */}
+        <MeshTransmissionMaterial
+          backside={true}
+          samples={4} // Reduced for performance, increase if needed
+          resolution={512} // Reduced for performance
+          transmission={1}
+          roughness={roughness}
+          thickness={3.5}
+          ior={1.5}
+          chromaticAberration={0.06}
+          anisotropy={0.1}
+          distortion={0.5}
+          distortionScale={0.5}
+          temporalDistortion={0.1}
           color={color}
-          envMapIntensity={0.4}
-          clearcoat={0.8}
-          clearcoatRoughness={0}
           metalness={0.1}
-          distort={distort}
-          speed={speed}
         />
       </mesh>
     </Float>
@@ -28,39 +38,54 @@ const AnimatedShape = ({ position, color, speed, distort, scale }: any) => {
 const Scene = () => {
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#4998ed" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#68b4f2" />
+      <ambientLight intensity={0.2} />
+      {/* Stronger, colorful lights to shine through the glass */}
+      <pointLight position={[10, 10, 10]} intensity={2} color="#2dd4bf" />
+      <pointLight position={[-10, -10, -10]} intensity={2} color="#3b82f6" />
+      <pointLight position={[0, 5, 5]} intensity={1.5} color="#10b981" />
+      <pointLight position={[0, -5, -5]} intensity={1} color="#0ea5e9" />
 
-      <AnimatedShape position={[2, 0, -2]} color="#4998ed" speed={2} distort={0.4} scale={1.5} />
-      <AnimatedShape position={[-2, 1, -3]} color="#234785" speed={1.5} distort={0.3} scale={1.2} />
-      <AnimatedShape position={[0, -2, -4]} color="#68b4f2" speed={2.5} distort={0.5} scale={1.8} />
-      <AnimatedShape position={[4, 2, -5]} color="#98cff8" speed={1.8} distort={0.4} scale={1} />
-      <AnimatedShape position={[-4, -2, -3]} color="#1a2d51" speed={1.2} distort={0.3} scale={1.4} />
+      {/* Deep Sea Palette: Dark Blues, Teals, Emeralds */}
+      {/* Large central shapes */}
+      <AnimatedShape position={[1.5, 0, -1]} color="#0ea5e9" speed={1.5} scale={1.6} roughness={0.3} />
+      <AnimatedShape position={[-1.5, 0.5, -2]} color="#0f766e" speed={1.2} scale={1.4} roughness={0.4} />
 
+      {/* Background shapes */}
+      <AnimatedShape position={[0, -2, -4]} color="#06b6d4" speed={2} scale={2} roughness={0.2} />
+      <AnimatedShape position={[4, 2, -5]} color="#14b8a6" speed={1.8} scale={1.2} roughness={0.3} />
+      <AnimatedShape position={[-4, -2, -3]} color="#1e3a8a" speed={1} scale={1.5} roughness={0.5} />
+
+      {/* High contrast environment for reflections */}
       <Environment preset="city" />
+
+      <EffectComposer disableNormalPass>
+        {/* Strong Bloom for the "Boom" effect */}
+        <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} height={300} intensity={0.8} />
+        <Noise opacity={0.03} />
+        <Vignette eskil={false} offset={0.1} darkness={1.1} />
+      </EffectComposer>
     </>
   );
 };
 
 export const Hero: React.FC = () => {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 overflow-hidden bg-dodger-blue-950">
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 overflow-hidden bg-[#02040a]">
 
       {/* 1. BACKGROUND LAYER - 3D SCENE */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
+        <Canvas camera={{ position: [0, 0, 8], fov: 45 }} dpr={[1, 1.5]}> {/* Cap DPR for performance */}
           <Suspense fallback={null}>
             <Scene />
-            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.3} />
           </Suspense>
         </Canvas>
       </div>
 
       {/* 2. OVERLAYS */}
-      {/* Gradient overlay to fade 3D into background */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-dodger-blue-950/30 via-transparent to-dodger-blue-950 pointer-events-none" />
-      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#1a2d51_100%)] pointer-events-none opacity-60" />
+      {/* Gradient overlay to fade 3D into background - Deep Sea Tones */}
+      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#02040a]/30 via-transparent to-[#02040a] pointer-events-none" />
+      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#02040a_100%)] pointer-events-none opacity-60" />
 
       {/* 3. CONTENT - Elevated Z-Index */}
       <div className="relative z-30 flex flex-col items-center text-center max-w-[90rem] mx-auto space-y-12 pointer-events-none">
@@ -70,16 +95,16 @@ export const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="pointer-events-auto group relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-dodger-blue-950/30 border border-dodger-blue-400/20 backdrop-blur-md shadow-[0_0_30px_-10px_rgba(73,152,237,0.5)] hover:bg-dodger-blue-900/40 transition-all cursor-pointer"
+          className="pointer-events-auto group relative inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/30 border border-teal-500/20 backdrop-blur-md shadow-[0_0_30px_-10px_rgba(45,212,191,0.3)] hover:bg-blue-900/40 transition-all cursor-pointer"
         >
           <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-dodger-blue-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-dodger-blue-400"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-400"></span>
           </span>
-          <span className="text-[10px] font-medium tracking-[0.2em] text-dodger-blue-100/90 uppercase group-hover:text-dodger-blue-50 transition-colors">
+          <span className="text-[10px] font-medium tracking-[0.2em] text-teal-100/90 uppercase group-hover:text-teal-50 transition-colors">
             Introducing V2 Protocol
           </span>
-          <ChevronRight size={10} className="text-dodger-blue-400/50 group-hover:text-dodger-blue-400 group-hover:translate-x-0.5 transition-all" />
+          <ChevronRight size={10} className="text-teal-400/50 group-hover:text-teal-400 group-hover:translate-x-0.5 transition-all" />
         </motion.div>
 
         {/* Main Title */}
@@ -90,7 +115,7 @@ export const Hero: React.FC = () => {
           className="font-serif text-6xl md:text-8xl lg:text-[7.5rem] font-light tracking-[-0.03em] leading-[0.95] text-white text-center drop-shadow-2xl"
         >
           Cash That <br />
-          <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-b from-dodger-blue-200 via-dodger-blue-300 to-dodger-blue-600 pb-2">
+          <span className="italic font-normal text-transparent bg-clip-text bg-gradient-to-b from-teal-200 via-blue-300 to-blue-600 pb-2">
             Compounds.
           </span>
         </motion.h1>
@@ -100,7 +125,7 @@ export const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg md:text-xl text-dodger-blue-100/80 max-w-xl mx-auto font-sans font-light leading-relaxed tracking-wide mix-blend-plus-lighter"
+          className="text-lg md:text-xl text-blue-100/80 max-w-xl mx-auto font-sans font-light leading-relaxed tracking-wide mix-blend-plus-lighter"
         >
           {HERO_CONTENT.description}
         </motion.p>
@@ -113,9 +138,9 @@ export const Hero: React.FC = () => {
           className="pointer-events-auto flex flex-col sm:flex-row items-center justify-center gap-6 pt-6 w-full"
         >
           {/* Primary CTA - Glowing */}
-          <button className="group relative px-10 py-4 bg-transparent rounded-full overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-dodger-blue-900/20">
+          <button className="group relative px-10 py-4 bg-transparent rounded-full overflow-hidden transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-teal-900/20">
             {/* Button Glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-dodger-blue-600 to-dodger-blue-400 opacity-100 transition-opacity duration-500"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-teal-600 opacity-100 transition-opacity duration-500"></div>
 
             {/* Sheen effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 -translate-x-full group-hover:animate-[shimmer_1s_infinite] pointer-events-none"></div>
@@ -135,7 +160,7 @@ export const Hero: React.FC = () => {
       </div>
 
       {/* Bottom Gradient Fade - Transitions into next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-dodger-blue-950 to-transparent z-20 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#02040a] to-transparent z-20 pointer-events-none"></div>
     </section>
   );
 };
