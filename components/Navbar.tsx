@@ -23,25 +23,25 @@ export const Navbar: React.FC = () => {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className={`fixed top-6 left-0 right-0 z-50 flex justify-center px-4`}
       >
-        <div 
+        <div
           className={`
             relative flex items-center justify-between px-6 py-3 rounded-full 
             transition-all duration-500 ease-in-out
-            ${isScrolled 
-              ? 'bg-white/90 border border-black/5 shadow-lg shadow-black/5 backdrop-blur-xl w-full max-w-[58rem]' 
+            ${isScrolled
+              ? 'bg-white/90 border border-black/5 shadow-lg shadow-black/5 backdrop-blur-xl w-full max-w-[58rem]'
               : 'bg-white/5 border border-white/10 backdrop-blur-md w-full max-w-5xl shadow-[0_0_20px_rgba(0,0,0,0.2)]'}
           `}
         >
           {/* Logo */}
           <a href="#" className="flex items-center group">
-             <img 
-                src="https://res.cloudinary.com/ds9dcy2s2/image/upload/v1763581042/logojoinn_vtcd91.png" 
-                alt="Joinn.io" 
-                className={`
+            <img
+              src="https://res.cloudinary.com/ds9dcy2s2/image/upload/v1763581042/logojoinn_vtcd91.png"
+              alt="Joinn.io"
+              className={`
                     h-5 w-auto object-contain transition-all duration-500
                     ${isScrolled ? '' : 'brightness-0 invert'} 
                 `}
-             />
+            />
           </a>
 
           {/* Desktop Links */}
@@ -63,18 +63,22 @@ export const Navbar: React.FC = () => {
 
           {/* CTA */}
           <div className="hidden md:flex items-center">
-            <button className={`
+            <a
+              href="https://joinn-app-git-feature-dark-modern-redesign-yield-fi.vercel.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`
               px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-lg
-              ${isScrolled 
-                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-600/20' 
-                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-blue-500/30 border border-white/10'}
+              ${isScrolled
+                  ? 'bg-blue-600 text-white hover:bg-[#54BEFF] shadow-blue-600/20'
+                  : 'bg-blue-600 text-white hover:bg-[#54BEFF] shadow-blue-500/30 border border-white/10'}
             `}>
-              Join Waitlist
-            </button>
+              Joinn Now
+            </a>
           </div>
 
           {/* Mobile Toggle */}
-          <button 
+          <button
             className={`md:hidden ${isScrolled ? 'text-zinc-900' : 'text-white'}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
