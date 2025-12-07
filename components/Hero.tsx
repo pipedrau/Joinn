@@ -1,91 +1,34 @@
-
 // @ts-nocheck
-import React, { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { Float, MeshTransmissionMaterial, Environment, OrbitControls } from '@react-three/drei';
-import { EffectComposer, Bloom, Noise, Vignette } from '@react-three/postprocessing';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Play, ChevronRight } from 'lucide-react';
 import { HERO_CONTENT } from '../constants';
 
-const AnimatedShape = ({ position, color, speed, scale, roughness = 0.2 }: any) => {
-  return (
-    <Float speed={speed} rotationIntensity={1.5} floatIntensity={1.5}>
-      <mesh position={position} scale={scale}>
-        <sphereGeometry args={[1, 64, 64]} />
-        {/* Glassmorphism Material */}
-        <MeshTransmissionMaterial
-          backside={true}
-          samples={4} // Reduced for performance, increase if needed
-          resolution={512} // Reduced for performance
-          transmission={1}
-          roughness={roughness}
-          thickness={3.5}
-          ior={1.5}
-          chromaticAberration={0.06}
-          anisotropy={0.1}
-          distortion={0.5}
-          distortionScale={0.5}
-          temporalDistortion={0.1}
-          color={color}
-          metalness={0.1}
-        />
-      </mesh>
-    </Float>
-  );
-};
-
-const Scene = () => {
-  return (
-    <>
-      <ambientLight intensity={0.2} />
-      {/* Stronger, colorful lights to shine through the glass */}
-      <pointLight position={[10, 10, 10]} intensity={2} color="#2dd4bf" />
-      <pointLight position={[-10, -10, -10]} intensity={2} color="#3b82f6" />
-      <pointLight position={[0, 5, 5]} intensity={1.5} color="#10b981" />
-      <pointLight position={[0, -5, -5]} intensity={1} color="#0ea5e9" />
-
-      {/* Deep Sea Palette: Dark Blues, Teals, Emeralds */}
-      {/* Large central shapes */}
-      <AnimatedShape position={[1.5, 0, -1]} color="#0ea5e9" speed={1.5} scale={1.6} roughness={0.3} />
-      <AnimatedShape position={[-1.5, 0.5, -2]} color="#0f766e" speed={1.2} scale={1.4} roughness={0.4} />
-
-      {/* Background shapes */}
-      <AnimatedShape position={[0, -2, -4]} color="#06b6d4" speed={2} scale={2} roughness={0.2} />
-      <AnimatedShape position={[4, 2, -5]} color="#14b8a6" speed={1.8} scale={1.2} roughness={0.3} />
-      <AnimatedShape position={[-4, -2, -3]} color="#1e3a8a" speed={1} scale={1.5} roughness={0.5} />
-
-      {/* High contrast environment for reflections */}
-      <Environment preset="city" />
-
-      <EffectComposer disableNormalPass>
-        {/* Strong Bloom for the "Boom" effect */}
-        <Bloom luminanceThreshold={0.4} luminanceSmoothing={0.9} height={300} intensity={0.8} />
-        <Noise opacity={0.03} />
-        <Vignette eskil={false} offset={0.1} darkness={1.1} />
-      </EffectComposer>
-    </>
-  );
-};
+// Base URL for assets
+const baseUrl = import.meta.env.BASE_URL;
+const getAsset = (path: string) => `${baseUrl}${path.startsWith('/') ? path.slice(1) : path}`;
 
 export const Hero: React.FC = () => {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 overflow-hidden bg-[#02040a]">
 
-      {/* 1. BACKGROUND LAYER - 3D SCENE */}
+      {/* 1. BACKGROUND LAYER - VIDEO */}
       <div className="absolute inset-0 z-0">
-        <Canvas camera={{ position: [0, 0, 8], fov: 45 }} dpr={[1, 1.5]}> {/* Cap DPR for performance */}
-          <Suspense fallback={null}>
-            <Scene />
-            <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.3} />
-          </Suspense>
-        </Canvas>
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="w-full h-full object-cover opacity-70"
+        >
+          <source src={getAsset('assets/background.webm')} type="video/webm" />
+        </video>
       </div>
 
       {/* 2. OVERLAYS */}
-      {/* Gradient overlay to fade 3D into background - Deep Sea Tones */}
-      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#02040a]/30 via-transparent to-[#02040a] pointer-events-none" />
-      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#02040a_100%)] pointer-events-none opacity-60" />
+      {/* Gradient overlay to fade video into background - Deep Sea Tones */}
+      <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#02040a]/40 via-transparent to-[#02040a] pointer-events-none" />
+      <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#02040a_100%)] pointer-events-none opacity-50" />
 
       {/* 3. CONTENT - Elevated Z-Index */}
       <div className="relative z-30 flex flex-col items-center text-center max-w-[90rem] mx-auto space-y-12 pointer-events-none">
@@ -125,7 +68,7 @@ export const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-lg md:text-xl text-blue-100/80 max-w-xl mx-auto font-sans font-light leading-relaxed tracking-wide mix-blend-plus-lighter"
+          className="text-lg md:text-xl text-blue-100/80 max-w-xl mx-auto font-sans font-light leading-relaxed tracking-wide"
         >
           {HERO_CONTENT.description}
         </motion.p>
