@@ -1,7 +1,7 @@
 // @ts-nocheck
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, ChevronRight } from 'lucide-react';
+import { ArrowRight, Play, ChevronRight, Layers } from 'lucide-react';
 import { HERO_CONTENT } from '../constants';
 
 // Base URL for assets
@@ -9,19 +9,29 @@ const baseUrl = import.meta.env.BASE_URL;
 const getAsset = (path: string) => `${baseUrl}${path.startsWith('/') ? path.slice(1) : path}`;
 
 export const Hero: React.FC = () => {
+  const [currentVideo, setCurrentVideo] = useState<'default' | 'v2'>('default');
+
+  const toggleVideo = () => {
+    setCurrentVideo(prev => prev === 'default' ? 'v2' : 'default');
+  };
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 overflow-hidden bg-[#02040a]">
 
       {/* 1. BACKGROUND LAYER - VIDEO */}
       <div className="absolute inset-0 z-0">
         <video
+          key={currentVideo} // Force re-render on change
           autoPlay
           loop
           muted
           playsInline
           className="w-full h-full object-cover opacity-70"
         >
-          <source src={getAsset('assets/background.webm')} type="video/webm" />
+          <source
+            src={currentVideo === 'default' ? getAsset('assets/background.webm') : getAsset('assets/background-Joinn.webm')}
+            type="video/webm"
+          />
         </video>
       </div>
 
@@ -29,6 +39,17 @@ export const Hero: React.FC = () => {
       {/* Gradient overlay to fade video into background - Deep Sea Tones */}
       <div className="absolute inset-0 z-[1] bg-gradient-to-b from-[#02040a]/40 via-transparent to-[#02040a] pointer-events-none" />
       <div className="absolute inset-0 z-[1] bg-[radial-gradient(circle_at_50%_50%,transparent_0%,#02040a_100%)] pointer-events-none opacity-50" />
+
+      {/* DEBUG: Video Toggle Control */}
+      <div className="absolute bottom-8 right-8 z-50 pointer-events-auto">
+        <button
+          onClick={toggleVideo}
+          className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-lg text-white/80 hover:bg-white/20 hover:text-white transition-all text-xs font-mono"
+        >
+          <Layers size={14} />
+          <span>{currentVideo === 'default' ? 'BG: Original' : 'BG: Version 2'}</span>
+        </button>
+      </div>
 
       {/* 3. CONTENT - Elevated Z-Index */}
       <div className="relative z-30 flex flex-col items-center text-center max-w-[90rem] mx-auto space-y-12 pointer-events-none">
