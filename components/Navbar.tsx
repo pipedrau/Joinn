@@ -5,14 +5,27 @@ import { NAV_LINKS } from '../constants';
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const isActive = isScrolled || isHovered;
+
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const heroSection = document.getElementById('hero');
+    if (!heroSection) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsScrolled(!entry.isIntersecting);
+      },
+      {
+        threshold: 0.1,
+        root: null
+      }
+    );
+
+    observer.observe(heroSection);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -21,15 +34,17 @@ export const Navbar: React.FC = () => {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={`fixed top-6 left-0 right-0 z-50 flex justify-center px-4`}
       >
         <div
           className={`
             relative flex items-center justify-between px-6 py-3 rounded-full 
             transition-all duration-500 ease-in-out
-            ${isScrolled
-              ? 'bg-white/90 border border-black/5 shadow-lg shadow-black/5 backdrop-blur-xl w-full max-w-[58rem]'
-              : 'bg-white/5 border border-white/10 backdrop-blur-md w-full max-w-5xl shadow-[0_0_20px_rgba(0,0,0,0.2)]'}
+            ${isActive
+              ? 'bg-white/95 border border-black/5 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.1)] backdrop-blur-xl w-full max-w-[58rem]'
+              : 'bg-white/10 glass-border backdrop-blur-2xl w-full max-w-5xl shadow-[0_20px_50px_-12px_rgba(0,12,59,0.5)]'}
           `}
         >
           {/* Logo */}
@@ -38,25 +53,25 @@ export const Navbar: React.FC = () => {
               src="https://res.cloudinary.com/ds9dcy2s2/image/upload/v1763581042/logojoinn_vtcd91.png"
               alt="Joinn.io"
               className={`
-                    h-5 w-auto object-contain transition-all duration-500
-                    ${isScrolled ? '' : 'brightness-0 invert'} 
+                    h-6 w-auto object-contain transition-all duration-500
+                    ${isActive ? '' : 'brightness-0 invert'} 
                 `}
             />
           </a>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-8">
             {NAV_LINKS.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
                 className={`
-                    text-sm font-medium transition-colors relative group 
-                    ${isScrolled ? 'text-zinc-500 hover:text-black' : 'text-blue-100 hover:text-white'}
+                    text-base font-medium transition-colors relative group 
+                    ${isActive ? 'text-zinc-600 hover:text-black' : 'text-white hover:text-blue-200'}
                 `}
               >
                 {link.name}
-                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${isScrolled ? 'bg-black' : 'bg-cyan-400'}`}></span>
+                <span className={`absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 ease-out ${isActive ? 'bg-black' : 'bg-cyan-400'}`}></span>
               </a>
             ))}
           </div>
@@ -69,7 +84,7 @@ export const Navbar: React.FC = () => {
               rel="noopener noreferrer"
               className={`
               px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-lg
-              ${isScrolled
+              ${isActive
                   ? 'bg-blue-600 text-white hover:bg-[#54BEFF] shadow-blue-600/20'
                   : 'bg-blue-600 text-white hover:bg-[#54BEFF] shadow-blue-500/30 border border-white/10'}
             `}>
@@ -79,7 +94,7 @@ export const Navbar: React.FC = () => {
 
           {/* Mobile Toggle */}
           <button
-            className={`md:hidden ${isScrolled ? 'text-zinc-900' : 'text-white'}`}
+            className={`md:hidden ${isActive ? 'text-zinc-900' : 'text-white'}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}

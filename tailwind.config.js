@@ -9,8 +9,9 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                serif: ['Playfair Display', 'serif'],
+                sans: ['Poppins', 'sans-serif'],
+                poppins: ['Poppins', 'sans-serif'],
+                inter: ['Inter', 'sans-serif'],
             },
             colors: {
                 'dodger-blue': {
