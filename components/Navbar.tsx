@@ -1,14 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { NAV_LINKS } from '../constants';
+import { useLanguage } from '../context/LanguageContext';
 
 export const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t } = useLanguage();
 
   const isActive = isScrolled || isHovered;
+
+  const scrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.replace('#', '');
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const NAV_LINKS = [
+    { name: t.nav.mission, href: '#solution' },
+    { name: t.nav.solution, href: '#stack' },
+    { name: t.nav.market, href: '#partners' },
+    { name: t.nav.stack, href: '#footer' },
+  ];
 
   useEffect(() => {
     const heroSection = document.getElementById('hero');
@@ -48,14 +65,15 @@ export const Navbar: React.FC = () => {
           `}
         >
           {/* Logo */}
-          <a href="#" className="flex items-center group">
+          <a href="#hero" className="flex items-center group">
             <img
               src="https://res.cloudinary.com/ds9dcy2s2/image/upload/v1763581042/logojoinn_vtcd91.png"
               alt="Joinn.io"
               className={`
                     h-6 w-auto object-contain transition-all duration-500
-                    ${isActive ? '' : 'brightness-0 invert'} 
+                    ${isActive ? '' : 'brightness-0 md:brightness-0'} 
                 `}
+              style={!isActive ? { filter: window.innerWidth < 768 ? 'brightness(0) saturate(100%) invert(8%) sepia(35%) saturate(7465%) hue-rotate(224deg) brightness(88%) contrast(106%)' : 'brightness(0) saturate(100%) invert(8%) sepia(35%) saturate(7465%) hue-rotate(224deg) brightness(88%) contrast(106%)' } : {}}
             />
           </a>
 
@@ -65,9 +83,10 @@ export const Navbar: React.FC = () => {
               <a
                 key={link.name}
                 href={link.href}
+                onClick={(e) => scrollToSection(e, link.href)}
                 className={`
                     text-base font-medium transition-colors relative group 
-                    ${isActive ? 'text-zinc-600 hover:text-black' : 'text-white hover:text-blue-200'}
+                    ${isActive ? 'text-zinc-600 hover:text-black' : 'text-[#01104E] hover:text-blue-600'}
                 `}
               >
                 {link.name}
@@ -85,19 +104,19 @@ export const Navbar: React.FC = () => {
               className={`
               px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 shadow-lg
               ${isActive
-                  ? 'bg-blue-600 text-white hover:bg-[#54BEFF] shadow-blue-600/20'
-                  : 'bg-blue-600 text-white hover:bg-[#54BEFF] shadow-blue-500/30 border border-white/10'}
+                  ? 'bg-brand-accent text-white hover:bg-brand-accent/90 shadow-brand-accent/20'
+                  : 'bg-brand-accent text-white hover:bg-brand-accent/90 shadow-brand-accent/30 border border-white/10'}
             `}>
-              Joinn Now
+              {t.nav.cta}
             </a>
           </div>
 
           {/* Mobile Toggle */}
           <button
-            className={`md:hidden ${isActive ? 'text-zinc-900' : 'text-white'}`}
+            className={`md:hidden ${isActive ? 'text-zinc-900' : 'text-[#01104E]'}`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </motion.nav>
@@ -116,15 +135,23 @@ export const Navbar: React.FC = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={(e) => {
+                    setIsMobileMenuOpen(false);
+                    scrollToSection(e, link.href);
+                  }}
                   className="text-3xl font-semibold text-white tracking-tight border-b border-white/10 pb-4"
                 >
                   {link.name}
                 </a>
               ))}
-              <button className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold text-lg mt-4 shadow-lg shadow-blue-900/50">
-                Get Early Access
-              </button>
+              <a
+                href="https://joinn-app-git-feature-dark-modern-redesign-yield-fi.vercel.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-brand-accent text-white py-4 rounded-xl font-semibold text-lg mt-4 shadow-lg shadow-brand-accent/50 text-center"
+              >
+                {t.nav.cta}
+              </a>
             </div>
           </motion.div>
         )}

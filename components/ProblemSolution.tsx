@@ -1,47 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { useLanguage } from '../context/LanguageContext';
 
-// Base URL for assets (handles GitHub Pages /Joinn/ subpath)
+// Base URL for assets
 // @ts-ignore
 const baseUrl = (import.meta as any).env.BASE_URL;
 const getAsset = (path: string) => `${baseUrl}${path.startsWith('/') ? path.slice(1) : path}`;
-
-// Feature data
-const leftFeatures = [
-  {
-    icon: 'assets/SVGS/icon-animation.svg',
-    title: 'Real-time Yield',
-    description: 'Your balance earns yield continuously. Inflation has no room here.',
-  },
-  {
-    icon: 'assets/SVGS/icon-cards.svg',
-    title: 'Spend While Earning',
-    description: 'A Mastercard that keeps your compounding loop alive.',
-  },
-  {
-    icon: 'assets/SVGS/icon-p2p.svg',
-    title: 'Tokenized Assets, Simplified',
-    description: 'Access T-Bills, bonds, and yield vaults with Web2 simplicity.',
-  },
-];
-
-const rightFeatures = [
-  {
-    icon: 'assets/SVGS/icon-flash.svg',
-    title: 'Gasless & Invisible Web3',
-    description: 'No wallet pop-ups, no fees. Just seamless transactions.',
-  },
-  {
-    icon: 'assets/SVGS/icon-globe.svg',
-    title: 'Global + Local Rail Connectivity',
-    description: 'Deposit locally, invest globally — instantly.',
-  },
-  {
-    icon: 'assets/SVGS/icon-shield.svg',
-    title: 'Secure by Design',
-    description: 'Self-custodial architecture and institutional-grade protection.',
-  },
-];
 
 // Feature Item Component with Ref forwarding for Title
 const FeatureItem = ({
@@ -68,13 +32,20 @@ const FeatureItem = ({
     transition={{ duration: 0.6, ease: "easeOut" }}
     onMouseEnter={() => onHover(id)}
     onMouseLeave={() => onHover(null)}
-    className={`flex flex-col cursor-pointer transition-all duration-300 hover:scale-105 ${align === 'right' ? 'items-end text-right' : 'items-start text-left'}`}
+    className={`flex flex-row lg:flex-col items-start cursor-pointer transition-all duration-300 hover:scale-105 gap-5 lg:gap-0 ${align === 'right' ? 'lg:items-end lg:text-right' : 'lg:items-start lg:text-left'}`}
   >
-    <div className="w-10 h-10 mb-3">
-      <img src={getAsset(icon)} alt="" className="w-full h-full object-contain" />
+    <div className="w-10 h-10 lg:w-10 lg:h-10 mt-1 lg:mt-0 mb-0 lg:mb-3 flex-shrink-0">
+      <img
+        src={getAsset(icon)}
+        alt=""
+        className="w-full h-full object-contain"
+        style={{ filter: "invert(53%) sepia(87%) saturate(2844%) hue-rotate(346deg) brightness(101%) contrast(106%)" }}
+      />
     </div>
-    <h3 ref={titleRef} className="text-base font-bold text-slate-900 mb-1 font-sans relative z-10">{title}</h3>
-    <p className="text-slate-600 leading-relaxed text-xs max-w-[180px] font-sans">{description}</p>
+    <div className={`flex flex-col ${align === 'right' ? 'lg:items-end' : 'lg:items-start'}`}>
+      <h3 ref={titleRef} className="text-[18px] lg:text-base font-bold text-slate-900 mb-0.5 font-sans relative z-10">{title}</h3>
+      <p className="text-slate-600 leading-snug text-[14px] lg:text-xs max-w-[220px] lg:max-w-[180px] font-sans">{description}</p>
+    </div>
   </motion.div>
 );
 
@@ -114,11 +85,8 @@ const ConnectorLine = ({
   );
 };
 
-interface ProblemSolutionProps {
-  scrollContainerRef?: React.RefObject<HTMLElement>;
-}
-
-export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContainerRef }) => {
+export const ProblemSolution: React.FC<{ scrollContainerRef?: React.RefObject<HTMLElement> }> = ({ scrollContainerRef }) => {
+  const { t } = useLanguage();
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -129,6 +97,18 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
   const rightTitleRefs = useRef<(HTMLHeadingElement | null)[]>([]);
 
   const [lineCoords, setLineCoords] = useState<{ [key: string]: { startX: number, startY: number, endX: number, endY: number } }>({});
+
+  const leftFeatures = [
+    { icon: 'assets/SVGS/icon-animation.svg', title: t.problemSolution.features.yield.title, description: t.problemSolution.features.yield.description },
+    { icon: 'assets/SVGS/icon-cards.svg', title: t.problemSolution.features.cards.title, description: t.problemSolution.features.cards.description },
+    { icon: 'assets/SVGS/icon-p2p.svg', title: t.problemSolution.features.p2p.title, description: t.problemSolution.features.p2p.description },
+  ];
+
+  const rightFeatures = [
+    { icon: 'assets/SVGS/icon-flash.svg', title: t.problemSolution.features.flash.title, description: t.problemSolution.features.flash.description },
+    { icon: 'assets/SVGS/icon-globe.svg', title: t.problemSolution.features.globe.title, description: t.problemSolution.features.globe.description },
+    { icon: 'assets/SVGS/icon-shield.svg', title: t.problemSolution.features.shield.title, description: t.problemSolution.features.shield.description },
+  ];
 
   // Scroll Tracking for Sticky Reveal
   const { scrollYProgress } = useScroll({
@@ -207,9 +187,6 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
     window.addEventListener('resize', calculateLines);
 
     // Also recalculate periodically during the reveal animation to track positions
-    // This is expensive but necessary if elements move. However, sticky reveal moves the logic container? 
-    // Actually, Scale transform affects layout only visually, but getBoundingClientRect captures rendered rect.
-    // Since scale changes, we might want to defer calculation until fully revealed or interval check.
     const interval = setInterval(calculateLines, 100); // Check for layout shifts
     const timeout = setTimeout(() => { clearInterval(interval); calculateLines(); }, 2000); // Stop after likely animation end
 
@@ -221,11 +198,11 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
   }, []);
 
   return (
-    <section ref={sectionRef} className="h-[200vh] bg-[#CFEDFF] snap-start snap-always relative">
+    <section id="solution" ref={sectionRef} className="h-auto lg:h-[200vh] bg-[#CFEDFF] snap-start snap-always relative py-20 lg:py-0">
       {/* Intermediate snap point to allow "Stage 2" scroll stop */}
-      <div className="absolute top-1/2 w-full h-px snap-start pointer-events-none" />
+      <div className="hidden lg:block absolute top-1/2 w-full h-px snap-start pointer-events-none" />
 
-      <div className="sticky top-0 h-screen flex flex-col justify-center overflow-hidden">
+      <div className="lg:sticky top-0 lg:h-screen flex flex-col justify-center overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 w-full">
 
           {/* Header - Typewriter effect applied to all characters */}
@@ -241,9 +218,9 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
                   }
                 }
               }}
-              className="text-[28px] md:text-[34px] font-light text-blue-950 max-w-2xl mx-auto leading-tight font-sans"
+              className="text-[22px] md:text-[34px] font-light text-blue-950 max-w-full md:max-w-2xl mx-auto leading-tight font-sans"
             >
-              {"Where your money ".split("").map((char, i) => (
+              {t.problemSolution.title.split("").map((char, i) => (
                 <motion.span
                   key={`start-${i}`}
                   variants={{
@@ -254,32 +231,25 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
                   {char}
                 </motion.span>
               ))}
+              {" "}
               <span className="inline-flex">
-                {"compounds".split("").map((char, i) => (
+                {t.problemSolution.titleAccent.split("").map((char, i) => (
                   <motion.span
                     key={`comp-${i}`}
                     variants={{
                       hidden: { opacity: 0 },
                       visible: { opacity: 1 }
                     }}
-                    className="inline-block font-black text-blue-600 cursor-default"
-                    whileHover={{ y: -5, color: "#3b82f6" }}
+                    className="inline-block font-black text-brand-accent cursor-default"
+                    whileHover={{ y: -5, color: "#FF731D" }}
                     transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
                     {char}
                   </motion.span>
                 ))}
-                <motion.span
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: { opacity: 1 }
-                  }}
-                >
-                  .
-                </motion.span>
               </span>
               <br />
-              {"even while you spend.".split("").map((char, i) => (
+              {t.problemSolution.titleEnd.split("").map((char, i) => (
                 <motion.span
                   key={`end-${i}`}
                   variants={{
@@ -296,10 +266,10 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
           {/* Main Content with Line Overlay */}
           <div className="relative" ref={containerRef}>
 
-            {/* SVG Layer - Z-0 (BEHIND dashboard) */}
+            {/* SVG Layer - Z-0 (BEHIND dashboard) - Hidden on Mobile */}
             <motion.svg
               style={{ opacity: linesOpacity, zIndex: 0, overflow: 'visible' }}
-              className="absolute inset-0 w-full h-full pointer-events-none"
+              className="hidden lg:block absolute inset-0 w-full h-full pointer-events-none"
             >
               {Object.keys(lineCoords).map((key) => {
                 const coords = lineCoords[key];
@@ -321,8 +291,8 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
 
               {/* Left Column */}
               <motion.div
-                style={{ opacity: featuresOpacity, y: featuresY }}
-                className="flex flex-col gap-10 order-2 lg:order-1 relative z-[5]"
+                style={window.innerWidth >= 1024 ? { opacity: featuresOpacity, y: featuresY } : {}}
+                className="flex flex-col gap-8 lg:gap-10 order-2 lg:order-1 relative z-[5] px-8 lg:px-0"
               >
                 {leftFeatures.map((feature, idx) => (
                   <FeatureItem
@@ -340,16 +310,16 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
               </motion.div>
 
               {/* Center Column - Dashboard (Z-10, above lines) */}
-              <div className="order-1 lg:order-2 flex justify-center relative z-10 w-full">
+              <div className="order-1 lg:order-2 flex justify-center relative z-10 w-full mb-12 lg:mb-0">
                 <motion.div
                   ref={dashboardRef}
-                  style={{ scale: dashboardScale }}
+                  style={window.innerWidth >= 1024 ? { scale: dashboardScale } : {}}
                   className="w-full max-w-lg origin-center"
                 >
                   <img
                     src={getAsset('assets/JoinnDashboard.webp')}
                     alt="Joinn Dashboard"
-                    className="w-full h-auto rounded-xl shadow-2xl shadow-blue-900/20"
+                    className="w-full h-auto rounded-xl shadow-2xl shadow-blue-900/10 lg:shadow-blue-900/20"
                     onLoad={calculateLines} // Recalc when image loads
                   />
                 </motion.div>
@@ -357,8 +327,8 @@ export const ProblemSolution: React.FC<ProblemSolutionProps> = ({ scrollContaine
 
               {/* Right Column */}
               <motion.div
-                style={{ opacity: featuresOpacity, y: featuresY }}
-                className="flex flex-col gap-10 order-3 relative z-[5]"
+                style={window.innerWidth >= 1024 ? { opacity: featuresOpacity, y: featuresY } : {}}
+                className="flex flex-col gap-8 lg:gap-10 order-3 relative z-[5] px-8 lg:px-0"
               >
                 {rightFeatures.map((feature, idx) => (
                   <FeatureItem

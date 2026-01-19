@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useLanguage } from "../context/LanguageContext";
 
 // Partner logos
 import mastercardLogo from "../Assets/mastercard-logo.png";
@@ -16,15 +17,16 @@ const logos = [
 ];
 
 export const Partners = () => {
+    const { t } = useLanguage();
     // Duplicate logos for seamless infinite scroll
     const duplicatedLogos = [...logos, ...logos, ...logos];
 
     return (
-        <section className="relative w-full py-20 bg-[#CFEDFF] snap-start overflow-hidden">
+        <section id="partners" className="relative w-full py-20 bg-[#CFEDFF] snap-start overflow-hidden">
             {/* Title */}
             <div className="text-center mb-12">
                 <h2 className="text-[32px] font-sans text-[#21445F] leading-none">
-                    Our <span className="font-bold">Partners</span>
+                    {t.partners.title} <span className="font-bold text-brand-accent">{t.partners.titleAccent}</span>
                 </h2>
             </div>
 

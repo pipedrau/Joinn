@@ -39,7 +39,8 @@ export default {
                     50: '#fcfcfc',
                     100: '#f4f4f5',
                     200: '#e4e4e7',
-                }
+                },
+                'brand-accent': '#FF731D',
             },
             animation: {
                 'blob': 'blob 20s infinite',
